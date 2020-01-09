@@ -1,12 +1,15 @@
 import React, {Component} from 'react';
 import {Route, Link} from 'react-router-dom';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import AddFolder from '../AddFolder/AddFolder';
 import NoteListNav from '../NoteListNav/NoteListNav';
 import NotePageNav from '../NotePageNav/NotePageNav';
 import NoteListMain from '../NoteListMain/NoteListMain';
 import NotePageMain from '../NotePageMain/NotePageMain';
+import ErrorBoundary from '../ErrorBoundary';
 import ApiContext from '../ApiContext';
-import config from '../config';
+import AddNote from '../AddNote/AddNote';
+import getData from '../GetData'
 import './App.css';
 
 class App extends Component {
@@ -15,25 +18,16 @@ class App extends Component {
         folders: []
     };
 
-    componentDidMount() {
-        Promise.all([
-            fetch(`${config.API_ENDPOINT}/notes`),
-            fetch(`${config.API_ENDPOINT}/folders`)
-        ])
-            .then(([notesRes, foldersRes]) => {
-                if (!notesRes.ok)
-                    return notesRes.json().then(e => Promise.reject(e));
-                if (!foldersRes.ok)
-                    return foldersRes.json().then(e => Promise.reject(e));
 
-                return Promise.all([notesRes.json(), foldersRes.json()]);
-            })
-            .then(([notes, folders]) => {
-                this.setState({notes, folders});
-            })
-            .catch(error => {
-                console.error({error});
-            });
+    handleUpdateState = (notes, folders) => {
+        this.setState({
+            notes: notes,
+            folders: folders
+        })
+    }
+
+    componentDidMount() {
+        getData(this.handleUpdateState);
     }
 
     handleDeleteNote = noteId => {
@@ -72,6 +66,20 @@ class App extends Component {
                     />
                 ))}
                 <Route path="/note/:noteId" component={NotePageMain} />
+                    <Route 
+                        path="/add-folder" 
+                        render={(props) => 
+                            <ErrorBoundary>
+                                <AddFolder handleUpdateState={this.handleUpdateState} />
+                            </ErrorBoundary>}
+                    />
+                    <Route
+                        path="/add-note"
+                        render={(props) => 
+                            <ErrorBoundary>
+                                <AddNote folders={this.state.folders} handleUpdateState={this.handleUpdateState} />
+                            </ErrorBoundary>}
+                    />
             </>
         );
     }
