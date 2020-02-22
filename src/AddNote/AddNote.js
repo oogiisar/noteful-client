@@ -51,7 +51,7 @@ class AddNote extends Component {
         const headers = {
             'Content-Type': 'application/json'
         }
-        fetch(`${config.API_ENDPOINT}/notes`, 
+        fetch(`${config.API_ENDPOINT}/api/notes`, 
             {
                 method: 'POST',
                 headers: headers,
